@@ -89,10 +89,10 @@ int main (int argc, char **argv) {
                 break;
             case 'h':
                 print_help ();
-                break;
+                return (EXIT_SUCCESS);
             case '?':
                 print_usage ();
-                return (EXIT_FAILURE);;
+                return (EXIT_SUCCESS);
             default:
                 print_help();
                 abort();
