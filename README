@@ -1,0 +1,10 @@
+# Tutor README #
+===============
+
+Tutor is an application to create a tutor relationship tree using the client-server model. Consists of a tutor node (server) and many student nodes (clients). This was created as a part of CS 6390 Advanced Computer Networks course at UT Dallas.
+
+Collaborators: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220@utdallas.edu>
+
+Using the application
+
+0) Compiling the code
