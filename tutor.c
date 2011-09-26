@@ -65,8 +65,8 @@ int main (int argc, char **argv) {
     int tport, uport;
 
     /* Program must have atleast one argument */
-    if (argc < 2 ) {
-        print_usage();
+    if (argc < 2) {
+        print_usage ();
         exit (EXIT_SUCCESS);
     }
 
@@ -94,7 +94,7 @@ int main (int argc, char **argv) {
                 print_usage ();
                 return (EXIT_SUCCESS);
             default:
-                print_help();
+                print_help ();
                 abort();
         }
     }

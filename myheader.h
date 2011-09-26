@@ -11,20 +11,29 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <getopt.h>
-#include <unistd.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <sys/types.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#include <strings.h>
+#endif /* HAVE_STRING_H */
+
+/* To print DEBUG printf's */
 #ifdef  _DEBUG_
 #define DBG(x)  printf x
 #else
 #define DBG(x)  /* Nothing here */
 #endif
 
+/* For strrchr function */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR '/'
 #endif
