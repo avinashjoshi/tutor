@@ -29,7 +29,7 @@ static void  print_usage (void) {
 
 /* Print help message with all options */
 static void print_help (void) {
-    printf ("%s is an application to create tutor-student relationshiop tree\n", exec_name);
+    printf ("%s is an application to create tutor-student relationship tree\n", exec_name);
     print_usage ();
     printf ("\n\
             -p, --tport <number>   port number to be used with TCP\n\
