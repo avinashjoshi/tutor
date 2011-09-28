@@ -24,16 +24,17 @@ const struct option long_options[] = {
 
 /* Print the usage message */
 static void  print_usage (void) {
-    printf ("Usage: %s -p <tcp-port> -P <udp-port> [-h]...\n", exec_name);
+    printf ("Usage: %s [-p | --tport] <tcp-port> [-P | --uport] <udp-port> [-n] <clients> [-h]\n", exec_name);
 }
 
 /* Print help message with all options */
 static void print_help (void) {
     printf ("%s is an application to create tutor-student relationship tree\n", exec_name);
     print_usage ();
-    printf ("\n\
+    printf ("\
             -p, --tport <number>   port number to be used with TCP\n\
             -P, --uport <number>   port number to be used with UDP\n\
+            -n          <number>   Number of students a node can handle >= 2 \n\
             -h, --help             print this help\n");
 }
 
@@ -44,16 +45,17 @@ static void print_help (void) {
  */
 int is_number (char * string) {
     int temp = 0;
-    int isNum = 1;
+    int is_num = 1;
     while(string[temp] != 0) {
-        if(string[temp] < 48 || string[temp] > 57) isNum = 0;
+        if(string[temp] < 48 || string[temp] > 57) is_num = 0;
         temp++;  
     }     
-    return isNum;   
-} 
+    return is_num;   
+}
 
 int main (int argc, char **argv) {
 
+    /* strrchr gives the last occurance of PATH_SEPARATOR in argv[0] */
     exec_name = strrchr (argv[0], PATH_SEPARATOR);
     if (!exec_name)
         exec_name = argv[0];
@@ -62,7 +64,7 @@ int main (int argc, char **argv) {
 
     int optchar, opt_index = 0;
     int pflag = 0, Pflag = 0;
-    int tport, uport;
+    int tport, uport, nclients = 0;
 
     /* Program must have atleast one argument */
     if (argc < 2) {
@@ -70,7 +72,7 @@ int main (int argc, char **argv) {
         exit (EXIT_SUCCESS);
     }
 
-    while ((optchar = getopt_long (argc, argv, "p:P:h", long_options, &opt_index)) != -1) {
+    while ((optchar = getopt_long (argc, argv, "hp:P:n:", long_options, &opt_index)) != -1) {
         switch (optchar) {
             case 'p':
                 pflag = 1;
@@ -87,6 +89,12 @@ int main (int argc, char **argv) {
             case 'P':
                 Pflag = 1;
                 break;
+            case 'n':
+                nclients = atoi (optarg);
+                if (!is_number (optarg)) {
+                    fprintf (stderr, "%s: %s: argument to -n must be a number\n", exec_name, optarg);
+                    exit (EXIT_FAILURE);
+                }
             case 'h':
                 print_help ();
                 return (EXIT_SUCCESS);
@@ -99,8 +107,8 @@ int main (int argc, char **argv) {
         }
     }
 
-    if (pflag == 0 || Pflag == 0) {
-        fprintf (stderr, "%s: both -p and -P arguments are needed\n", exec_name);
+    if (pflag == 0 || Pflag == 0 || nclients == 0) {
+        fprintf (stderr, "%s: -p, -P and -n arguments are needed\n", exec_name);
         print_usage ();
         exit (EXIT_FAILURE);
     }
