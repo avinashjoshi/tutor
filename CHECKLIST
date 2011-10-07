@@ -1,5 +1,6 @@
 To be implemented
 ========================
+o No client-server concept. peer-peer only tutor.c
 o Separate files for TCP and UDP code
 o Can use commands like "JOIN" "STOP" "PATH" etc in client side
 o Write code for path computation

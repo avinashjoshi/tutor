@@ -8,3 +8,10 @@ Collaborators: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220
 Using the application
 
 0) Compiling the code
+	make all
+1) Removing object files
+	make clean
+2) Removing all compiled files
+	make cleanall
+
+You may want to have a look at the file Makefile

@@ -53,6 +53,16 @@ int is_number (char * string) {
     return is_num;   
 }
 
+int atoport (char *port_arg) {
+    int port;
+    port = atoi(port_arg);
+    if (!is_number (port_arg) || port < 0) {
+        fprintf (stderr, "%s: %s: invalid port number\n", exec_name, port_arg);
+        exit (EXIT_FAILURE);
+    }
+    return port;
+}
+
 int main (int argc, char **argv) {
 
     /* strrchr gives the last occurance of PATH_SEPARATOR in argv[0] */
@@ -76,18 +86,11 @@ int main (int argc, char **argv) {
         switch (optchar) {
             case 'p':
                 pflag = 1;
-                tport = atoi (optarg);
-                if (!is_number (optarg)) {
-                    fprintf (stderr, "%s: %s: argument to -p must be a number\n", exec_name, optarg);
-                    exit (EXIT_FAILURE);
-                }
-                if (tport < 0) {
-                    fprintf (stderr, "%s: %d: port number must be positive\n", exec_name, tport);
-                    exit (EXIT_FAILURE);
-                }
+                tport = atoport (optarg);
                 break;
             case 'P':
                 Pflag = 1;
+                uport = atoport (optarg);
                 break;
             case 'n':
                 nclients = atoi (optarg);
