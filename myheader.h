@@ -15,20 +15,14 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <getopt.h>
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #include <sys/types.h>
-#ifdef HAVE_STRING_H
 #include <string.h>
-#else
-#include <strings.h>
-#endif /* HAVE_STRING_H */
 
+#define _DEBUG_
 /* To print DEBUG printf's */
 #ifdef  _DEBUG_
-#define DBG(x)  printf x
+#define DBG(x)  printf x; printf("\n");
 #else
 #define DBG(x)  /* Nothing here */
 #endif
