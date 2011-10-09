@@ -100,7 +100,7 @@ main (int argc, char **argv) {
 
 	int optchar, opt_index = 0;
 	int pflag = 0, Pflag = 0;
-	int tport, uport, k = 0;
+	int tport, uport;
 	char *tport_arg, *uport_arg;
 
 	DBG (("%s, %s", commands[0], commands[1]));
@@ -158,13 +158,13 @@ main (int argc, char **argv) {
 		}
 
 		if (strcmp (argv[1], "makeserver") == 0) {
-			create_udp (uport);
+			create_udp (uport,2);
 			continue;
 		}
 
 		if (strcmp (argv[1], "join") == 0) {
 			//TODO: Accept tport and uport of root from join, for not it takes from ./tutor 
-			join_tree(1235,5679,uport,tport,"192.168.2.6");
+			join_tree(uport,tport,5678,1234,"192.168.2.10",2);
 		}
 		if (feof (stdin) || strcmp (argv[1], "exit") == 0) {
 			exit (EXIT_SUCCESS);

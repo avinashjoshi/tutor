@@ -39,6 +39,6 @@
 #endif
 
 void 
-create_udp (size_t);
+create_udp (size_t,int);
 void 
-join_tree (int,int,int,int,char*);
+join_tree (int,int,int,int,char*,int);
