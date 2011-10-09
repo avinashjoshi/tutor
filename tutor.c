@@ -13,7 +13,7 @@
 #include "myheader.h"
 
 const char *exec_name;
-const char *commands[] = {"help", "makeserver", "join", "computepath", "NULL"};
+const char *com_list[] = {"help", "makeserver", "join", "computepath", "NULL"};
 
 /* used for mapping the long options to short options */
 const struct option long_options[] = {
@@ -56,14 +56,33 @@ is_number (char * string) {
 	return is_num;   
 }
 
+int
+check_value (char *arg, char *opt) {
+	int num, n = 0;
+	if (strcmp ("k", opt) == 0)
+		n = 2;
+	if (strcmp ("port", opt) == 0)
+		n = 0;
+
+	if (!is_number (arg)) {
+		fprintf (stdout, "%s must be a number", arg);
+		return -1;
+	}
+	if ((num = atoi (arg)) < n) {
+		fprintf (stdout, "%s must be greater than %d", opt, n);
+		return -1;
+	}
+	return num;
+}
+
 /*
- * atoint = argument to number
+ * atoint_cli = argument to number
  * Function takes string as argument and returns
  * a port number if the string has a "valid" number
  * else exits the program with an FAILURE
  */
 int
-atoint (char *arg, char opt) {
+atoint_cli (char *arg, char opt) {
 	int num;
 	num = atoi(arg);
 	if (!is_number (arg) || num < 0) {
@@ -77,8 +96,8 @@ atoint (char *arg, char opt) {
 int
 is_command (char *com) {
 	int i = 0;
-	while (strcmp ("NULL", commands[i]) != 0) {
-		if (strcmp (com, commands[i]) == 0)
+	while (strcmp ("NULL", com_list[i]) != 0) {
+		if (strcmp (com, com_list[i]) == 0)
 			return 1;
 		i++;
 	}
@@ -88,8 +107,8 @@ is_command (char *com) {
 void
 list_commands (void) {
 	int i = 0;
-	while (strcmp ("NULL", commands[i]) != 0) {
-		printf ("%s ", commands[i]);
+	while (strcmp ("NULL", com_list[i]) != 0) {
+		printf ("%s ", com_list[i]);
 		i++;
 	}
 	printf ("\n");
@@ -100,10 +119,10 @@ main (int argc, char **argv) {
 
 	int optchar, opt_index = 0;
 	int pflag = 0, Pflag = 0;
-	int tport, uport;
+	int tport, uport, k;
 	char *tport_arg, *uport_arg;
-
-	DBG (("%s, %s", commands[0], commands[1]));
+	char *in_line = (char *) malloc (sizeof (char) * 100);
+	char *command, *com_arg;
 
 	/* strrchr gives the last occurance of PATH_SEPARATOR in argv[0] */
 	exec_name = strrchr (argv[0], PATH_SEPARATOR);
@@ -144,34 +163,56 @@ main (int argc, char **argv) {
 		exit (EXIT_FAILURE);
 	}
 
-	tport = atoint (tport_arg, 'p');
-	uport = atoint (uport_arg, 'P');
+	tport = atoint_cli (tport_arg, 'p');
+	uport = atoint_cli (uport_arg, 'P');
+
+	bzero (in_line, 100);
 
 	DBG (("TCP Port: %d\t UDP Port: %d", tport, uport));
 	while (1) {
-		printf("tutor> ");
-		scanf("%s", argv[1]);
+		printf("\ntutor> ");
+		fflush (stdin);
+		fgets (in_line, 100, stdin);
+		in_line [strlen (in_line) - 1] = '\0';
 
-		if (strcmp (argv[1], "help") == 0) {
+		command = strtok (in_line, " ");
+
+		// Capture CTLR-D and exit
+		if (feof (stdin) || strcmp (command, "exit") == 0) {
+			exit (EXIT_SUCCESS);
+		}
+
+		// If command does not exist in the list
+		if (is_command (command) == 0) {
+			fprintf (stderr, "command %s does not exist. You may want to try help\n", command);
+			continue;
+		}
+
+		if (strcmp (command, "help") == 0) {
 			list_commands ();
 			continue;
 		}
 
-		if (strcmp (argv[1], "makeserver") == 0) {
+		if (strcmp (command, "makeserver") == 0) {
+			com_arg = strtok (NULL, " ");
+			if (com_arg == NULL) {
+				fprintf (stdout, "makeserver takes one argument -- k value");
+				continue;
+			}
+
+			if ((k = check_value (com_arg, "k")) == -1)
+				continue;
+
+			DBG (("k value = '%d'", k));
+
 			create_udp (uport,2);
 			continue;
 		}
 
-		if (strcmp (argv[1], "join") == 0) {
+		if (strcmp (command, "join") == 0) {
 			//TODO: Accept tport and uport of root from join, for not it takes from ./tutor 
 			join_tree(uport,tport,5678,1234,"192.168.2.10",2);
 		}
-		if (feof (stdin) || strcmp (argv[1], "exit") == 0) {
-			exit (EXIT_SUCCESS);
-		}
-
-		if (is_command (argv[1]) == 0)
-			fprintf (stderr, "command %s does not exist. You may want to try help\n", argv[1]);
 	}
 
 	return (EXIT_SUCCESS);

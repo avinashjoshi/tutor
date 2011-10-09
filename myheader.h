@@ -28,7 +28,7 @@
 #define _DEBUG_
 /* To print DEBUG printf's */
 #ifdef  _DEBUG_
-#define DBG(x)  printf x; printf("\n");
+#define DBG(x)  printf ("DEBUG: "); printf x; printf("\n");
 #else
 #define DBG(x)  /* Nothing here */
 #endif
