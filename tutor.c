@@ -26,7 +26,7 @@ const struct option long_options[] = {
 /* Print the usage message */
 static void
 print_usage (void) {
-	printf ("usage: %s -p tcp_port -P udp_port -k number [-h]\n", exec_name);
+	printf ("usage: %s -p tcp_port -P udp_port [-h]\n", exec_name);
 }
 
 /* Print help message with all options */
@@ -37,7 +37,6 @@ print_help (void) {
 	printf ("\
 			-p, --tport <number>   port number to be used with TCP\n\
 			-P, --uport <number>   port number to be used with UDP\n\
-			-k          <number>   number of TCP connections allowed >= 2 \n\
 			-h, --help             print this help\n");
 }
 
@@ -67,7 +66,7 @@ int
 atoint (char *arg, char opt) {
 	int num;
 	num = atoi(arg);
-	if (!is_number (arg) || num < 0 || (opt == 'k' && num < 2)) {
+	if (!is_number (arg) || num < 0) {
 		fprintf (stderr, "%s: %s: invalid number for argument -%c\n", exec_name, arg, opt);
 		print_usage ();
 		exit (EXIT_FAILURE);
@@ -100,9 +99,9 @@ int
 main (int argc, char **argv) {
 
 	int optchar, opt_index = 0;
-	int pflag = 0, Pflag = 0, kflag = 0;
+	int pflag = 0, Pflag = 0;
 	int tport, uport, k = 0;
-	char *tport_arg, *uport_arg, *k_arg;
+	char *tport_arg, *uport_arg;
 
 	DBG (("%s, %s", commands[0], commands[1]));
 
@@ -119,7 +118,7 @@ main (int argc, char **argv) {
 		exit (EXIT_SUCCESS);
 	}
 
-	while ((optchar = getopt_long (argc, argv, "hp:P:k:", long_options, &opt_index)) != -1) {
+	while ((optchar = getopt_long (argc, argv, "hp:P:", long_options, &opt_index)) != -1) {
 		switch (optchar) {
 			case 'p':
 				pflag = 1;
@@ -128,10 +127,6 @@ main (int argc, char **argv) {
 			case 'P':
 				Pflag = 1;
 				uport_arg = optarg;
-				break;
-			case 'k':
-				kflag = 1;
-				k_arg = optarg;
 				break;
 			case 'h':
 				print_help ();
@@ -143,15 +138,14 @@ main (int argc, char **argv) {
 		}
 	}
 
-	if (pflag == 0 || Pflag == 0 || kflag == 0) {
-		fprintf (stderr, "%s: -p, -P and -k arguments are needed\n", exec_name);
+	if (pflag == 0 || Pflag == 0) {
+		fprintf (stderr, "%s: -p and -P arguments are needed\n", exec_name);
 		print_usage ();
 		exit (EXIT_FAILURE);
 	}
 
 	tport = atoint (tport_arg, 'p');
 	uport = atoint (uport_arg, 'P');
-	k = atoint (k_arg, 'k');
 
 	DBG (("TCP Port: %d\t UDP Port: %d", tport, uport));
 	while (1) {
