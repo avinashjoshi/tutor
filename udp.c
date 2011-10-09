@@ -39,6 +39,7 @@ handle_udp (void* uport) {
 	struct sockaddr_in server_addr,client_addr;
 	char udp_buffer[STRLEN];
 	char udp_list_buffer[STRLEN];
+	char temp_k[3];
 
 	//DBG (("%s \n","Creating UDP Socket ..."));
 
@@ -75,13 +76,26 @@ handle_udp (void* uport) {
 		//TODO: Check for k value before accepting the request
 		if (strcmp( udp_buffer , "join") == 0) {
 			if (child_count < k_child ) {
-				if ((bytes_sent = sendto(udp_sockfd,"accept",strlen("accept"),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
+				char temp[STRLEN];
+				strcpy(temp,"accept:192.168.2.10:");
+				sprintf(temp_k,"%d",k_child);
+				strcat(temp, "1234:");
+				strcat(temp, temp_k);
+				strcat(temp,"\n");
+				printf("%s",temp);
+				if ((bytes_sent = sendto(udp_sockfd,temp,strlen(temp),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
 					exit(EXIT_FAILURE);
 				}
 				child_count++;
 			}
 			else {	
-				strcpy(udp_list_buffer,"S1:192.168.2.10:5678:1235,S2:192.168.2.10:5678:1236\n");
+				strcpy(udp_list_buffer,"S1:192.168.2.10:5679:");
+				sprintf(temp_k,"%d",k_child);
+				strcat(udp_list_buffer,temp_k);
+				strcpy(udp_list_buffer,"S2:192.168.2.10:5680:");
+				sprintf(temp_k,"%d",k_child);
+				strcat(udp_list_buffer,temp_k);
+				strcat(udp_list_buffer,"\n");
 				if ((bytes_sent = sendto(udp_sockfd,udp_list_buffer,strlen(udp_list_buffer),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
 					exit(EXIT_FAILURE);
 				}

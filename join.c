@@ -25,7 +25,7 @@ struct list_details {
 };
 
 void
-join_tree(int uport,int tport,int r_uport,int r_tport,char* host,int k) {
+join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 	//TODO:Resolve the host name
 
@@ -37,7 +37,7 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host,int k) {
 	//Creates a temp UDP socket
 	int temp_udp_sockfd,t_index=0,i=0,s_index=0;
 	int port=r_uport;
-	char *list[k],*temp_str;
+	char *list[2],*temp_str;
 
 	if ((temp_udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
 		fprintf (stderr,"udp: Socket couldn't be opened\n");
@@ -79,9 +79,11 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host,int k) {
 			exit (EXIT_FAILURE);
 		}
 
-		if (strcmp (udp_buffer, "accept") == 0) {
-			//TODO: Open Persistent UDP Connnection
-			create_udp(uport,k);
+		//if (strcmp (udp_buffer, "accept") == 0) {
+		if (udp_buffer[0] == 'a') {
+			//TODO: Open Persistent UDP Connnection, split the udp response into tokens
+			create_udp(uport,2);
+			create_tcp(1234,"192.168.2.10",2);
 			DBG (("%s\n","Will open a TCP Connection.. Talmeee!!"));
 			break;
 		}
@@ -96,7 +98,7 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host,int k) {
 				temp_str = strtok (NULL, ",");
 			}
 
-			for(t_index=0;t_index<k;t_index++)
+			for(t_index=0;t_index<2;t_index++)
 			{
 				temp_str = list[t_index];
 				l_details[s_index].node_name = strtok (temp_str, ":");

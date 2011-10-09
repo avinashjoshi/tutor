@@ -40,5 +40,9 @@
 
 void 
 create_udp (size_t,int);
+
+void
+create_tcp(size_t,char*,int);
+
 void 
-join_tree (int,int,int,int,char*,int);
+join_tree (int,int,int,int,char*);
