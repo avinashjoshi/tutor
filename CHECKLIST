@@ -13,5 +13,24 @@ o Implement the the server's code as a "service" (no "exit ()", ctrl-C etc)
         ' Port number's
         ' k value
 
+makeserver - Creates a root node for the tutor tree
+	o Opens up a UDP socket in the requested port
+	o Goes back to our prompt.
+	o ONLY command accepted now would be exit 
+
+join - Adds the requesting node into the existing tree
+	o Sends a UDP message to the root node
+	o If root has space left for child (no. of child < k)
+		- Accepts the JOIN request and sends ACK
+		- Requesting node opens a Persistent TCP Connection
+	o If root has NO space left for child (no. of child == k)
+		- Rejects the JOIN request and send the list of its children
+		- Requesting node sends another UDP message to first node from the list sent by root
+	o Above 2 steps would be repeated until the requesting node joins the tree
+	o Note: FIFO Queue could be used for storing the list send by root/other nodes during the process.
+
+
+computepath - Computes path from requested node to the root node 
+
 Done
 ========================

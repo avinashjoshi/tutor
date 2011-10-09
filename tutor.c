@@ -13,7 +13,7 @@
 #include "myheader.h"
 
 const char *exec_name;
-const char *commands[] = {"help", "makeserver", "computepath", "NULL"};
+const char *commands[] = {"help", "makeserver", "join", "computepath", "NULL"};
 
 /* used for mapping the long options to short options */
 const struct option long_options[] = {
@@ -154,7 +154,6 @@ main (int argc, char **argv) {
 	k = atoint (k_arg, 'k');
 
 	DBG (("TCP Port: %d\t UDP Port: %d", tport, uport));
-
 	while (1) {
 		printf("tutor> ");
 		scanf("%s", argv[1]);
@@ -164,6 +163,15 @@ main (int argc, char **argv) {
 			continue;
 		}
 
+		if (strcmp (argv[1], "makeserver") == 0) {
+			create_udp (uport);
+			continue;
+		}
+
+		if (strcmp (argv[1], "join") == 0) {
+			//TODO: Accept tport and uport of root from join, for not it takes from ./tutor 
+			join_tree(1235,5679,uport,tport,"192.168.2.6");
+		}
 		if (feof (stdin) || strcmp (argv[1], "exit") == 0) {
 			exit (EXIT_SUCCESS);
 		}

@@ -18,6 +18,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
+#include <pthread.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+/*Buffer Size for every read and write calls*/
+#define STRLEN 1024
 
 #define _DEBUG_
 /* To print DEBUG printf's */
@@ -31,3 +37,8 @@
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR '/'
 #endif
+
+void 
+create_udp (size_t);
+void 
+join_tree (int,int,int,int,char*);
