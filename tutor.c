@@ -122,7 +122,8 @@ main (int argc, char **argv) {
 	int tport, uport, k;
 	char *tport_arg, *uport_arg;
 	char *in_line = (char *) malloc (sizeof (char) * 100);
-	char *command, *com_arg;
+	char *command, *com_arg, *host;
+	int join_uport, join_tport;
 
 	/* strrchr gives the last occurance of PATH_SEPARATOR in argv[0] */
 	exec_name = strrchr (argv[0], PATH_SEPARATOR);
@@ -205,13 +206,36 @@ main (int argc, char **argv) {
 
 			DBG (("k value = '%d'", k));
 
-			create_udp (uport,2);
+			create_udp (uport, k);
 			continue;
 		}
 
 		if (strcmp (command, "join") == 0) {
+			com_arg = strtok (NULL, " ");
+			
+			if (com_arg == NULL) {
+				fprintf (stdout, "makeserver takes two argument <ipaddress | host> <udp-port>");
+				continue;
+			}
+
+			host = com_arg;
+
+			DBG (("Host == %s", host));
+
+			com_arg = strtok (NULL, " ");
+			
+			if (com_arg == NULL) {
+				fprintf (stdout, "makeserver takes two argument <ipaddress | host> <udp-port>");
+				continue;
+			}
+
+			if ((join_uport = check_value (com_arg, "port")) == -1)
+				continue;
+
+			DBG (("UDP Port == %d", join_uport));
+
 			//TODO: Accept tport and uport of root from join, for not it takes from ./tutor 
-			join_tree(uport,tport,5678,1234,"192.168.2.10",2);
+			join_tree (uport, tport, join_uport, 1234, host, 2);
 		}
 	}
 
