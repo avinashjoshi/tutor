@@ -36,7 +36,6 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 	struct list_details l_details[20];
 	//Creates a temp UDP socket
 	int temp_udp_sockfd,t_index=0,l_index=0,i=0,s_index=0;
-	int port=r_uport;
 	char *list[2],*t_list[4],*temp_str;
 
 	if ((temp_udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
@@ -58,7 +57,7 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 		server_addr.sin_family = AF_INET;
 		if (s_index == 0) {
 			server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-			server_addr.sin_port = htons((size_t)port);
+			server_addr.sin_port = htons((size_t)r_uport);
 		}
 		else
 		{
@@ -70,8 +69,13 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 
 		server_addr_size = sizeof(server_addr);
+		
+		char sendbuff[20] = "join:";
+		char port_ch[7];
+		sprintf (port_ch, "%d", uport);
+		strcat (sendbuff, port_ch);
 
-		if ((bytes_sent = sendto(temp_udp_sockfd,"join",strlen("join"),0,(struct sockaddr *)&server_addr,server_addr_size)) < 0) {
+		if ((bytes_sent = sendto(temp_udp_sockfd,sendbuff,strlen(sendbuff),0,(struct sockaddr *)&server_addr,server_addr_size)) < 0) {
 			exit (EXIT_FAILURE);
 		}
 
@@ -92,15 +96,18 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 			{
 				printf("%s -- ",t_list[l_index]);
 			}
+			DBG (("Accecpted by ---- %d", uport));
 			create_udp(uport,tport,atoi(t_list[3]));
 			make_persistance(t_list[1],atoi(t_list[2]));
-			create_tcp(1235,atoi(t_list[3]));
+			DBG (("Structure ---====> '%s' '%s' '%s' '%s'", t_list[0],t_list[1],t_list[2],t_list[3]));
+			create_tcp(tport,atoi(t_list[3]));
 			DBG (("%s\n","Will open a TCP Connection.. Talmeee!!"));
 			l_index=0;
 			break;
 		}
 		else {
 			//TODO: Read list till 'k'
+			DBG (("Third node"));
 			t_index = 0;
 			DBG(("%s\n",udp_buffer));
 
@@ -110,7 +117,10 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 				temp_str = strtok (NULL, ",");
 			}
 
-			for(t_index=0;t_index<2;t_index++)
+			int list_len = t_index;
+			DBG (("%d", list_len));
+
+			for(t_index=0;t_index<list_len;t_index++)
 			{
 				temp_str = list[t_index];
 				l_details[s_index].node_name = strtok (temp_str, ":");

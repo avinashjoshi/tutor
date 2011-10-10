@@ -98,7 +98,6 @@ handle_tcp (void* tport) {
 	int sockid = socket(AF_INET,SOCK_STREAM,0);
 
 	struct sockaddr_in servaddr,clientaddr;
-	int port;
 
 	//Server Address has three feilds: Family, Port and Internet Address
 	bzero(&servaddr,sizeof(servaddr));
@@ -114,7 +113,6 @@ handle_tcp (void* tport) {
 	//Run an infinite loop that continuously accepts all the connection requests
 	for(;;)
 	{
-		printf("1");
 		int clientlen = sizeof(clientaddr);
 		size_t clientSockid = accept(sockid,(struct sockaddr *)&clientaddr,&clientlen);
 	}
