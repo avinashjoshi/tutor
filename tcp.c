@@ -18,9 +18,8 @@ fd_set socks;        /* Socket file descriptors we want to wake
 						up for, using select() */
 int highsock;	     /* Highest #'d file descriptor, needed for select() */
 
-void setnonblocking(sock)
-	int sock;
-{
+void
+setnonblocking(	int sock) {
 	int opts;
 
 	opts = fcntl(sock,F_GETFL);
@@ -36,7 +35,8 @@ void setnonblocking(sock)
 	return;
 }
 
-void build_select_list() {
+void
+build_select_list() {
 	int listnum;	     /* Current item in connectlist for for loops */
 
 	FD_ZERO(&socks);
@@ -52,7 +52,8 @@ void build_select_list() {
 	}
 }
 
-void handle_new_connection() {
+void
+handle_new_connection() {
 	int listnum;	     /* Current item in connectlist for for loops */
 	int connection; /* Socket file descriptor for incoming connections */
 
@@ -71,25 +72,24 @@ void handle_new_connection() {
 		}
 }
 
-void deal_with_data(
-		int listnum			/* Current item in connectlist for for loops */
-		) {
+void 
+deal_with_data(int listnum) {
 	char buffer[STRLEN];     /* Buffer for socket reads */
 	char *cur_char;      /* Used in processing buffer */
-
+	int rbytes;
 	bzero(&buffer,sizeof(buffer));
-	if (recv(connectlist[listnum],buffer,STRLEN,0) < 0) {
+	if ((rbytes = recv(connectlist[listnum],buffer,STRLEN,0)) < 0) {
 		close(connectlist[listnum]);
 		connectlist[listnum] = 0;
-	} else {
-		/* We got some data, so upper case it
-		   and send it back. */
-		printf("\nReceived: %s ",buffer);
+	} else if (rbytes > 0) {
+		rbytes=0;
+		printf("\nReceived: %d ",buffer);
 		send(connectlist[listnum],buffer,strlen(buffer),0);
 	}
 }
 
-void read_socks() {
+void
+read_socks() {
 	int listnum;	     /* Current item in connectlist for for loops */
 
 	if (FD_ISSET(sock,&socks))
