@@ -52,7 +52,6 @@ handle_udp (void* uport) {
 	char temp_k[20];
 
 	int m=0;
-	//DBG (("%s \n","Creating UDP Socket ..."));
 
 	//Creates a UDP socket
 	if ((udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
@@ -93,9 +92,6 @@ handle_udp (void* uport) {
 		temp_port = strtok (NULL, ":");
 		child_port = atoi(temp_port);
 
-		DBG (("\n------------ NEXT NODE ---------------\nUDP BUF Just before i join/send list = %s", udp_buffer));
-		DBG (("After split ====> %s %d", temp_command, child_port));
-
 		//TODO: Check for k value before accepting the request
 		if (strcmp( temp_command , "join") == 0) {
 			if (child_count < k_child ) {
@@ -121,7 +117,6 @@ handle_udp (void* uport) {
 			}
 			else {	
 
-				DBG (("I am here"));
 
 				char temp_b[30];
 				bzero (temp, sizeof(temp));
@@ -139,7 +134,7 @@ handle_udp (void* uport) {
 					if(m != k_child-1)
 						strcat(temp,",");	
 				}
-				DBG (("%s ----",temp));
+				DBG (("Sending %s",temp));
 				if ((bytes_sent = sendto(udp_sockfd,temp,strlen(temp),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
 					exit(EXIT_FAILURE);
 				}

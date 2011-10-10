@@ -51,11 +51,17 @@ handle_persistance (void *p) {
 	bzero(&servaddr,sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons((size_t)(t_det.tport));
-	servaddr.sin_addr.s_addr = inet_addr((t_det.thost));
+	servaddr.sin_addr.s_addr = inet_addr(t_det.thost);
 	//inet_pton(AF_INET,t_det.thost,servaddr.sin_addr);
 
 	int cstatus = connect(clientSockid,(struct sockaddr *)&servaddr,sizeof(servaddr));
-	printf("Client Connection Status : %d\n",cstatus);
+
+	if (cstatus < 0) {
+		fprintf (stdout, "Error in connect()");
+		return;
+	}
+
+	DBG (("Persistant connection with %s:%d", t_det.thost, t_det.tport));
 
 	/*Send and Read data
 	char sendD[STRLEN],recvD[STRLEN];

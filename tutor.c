@@ -15,6 +15,12 @@
 const char *exec_name;
 const char *com_list[] = {"help", "makeserver", "join", "computepath", "NULL"};
 
+struct parent_node {
+	char ip[50];
+	char tport[20];
+	char uport[20];
+} parent;
+
 /* used for mapping the long options to short options */
 const struct option long_options[] = {
 	{ "tport", required_argument, 0, 'p' },
@@ -222,8 +228,6 @@ main (int argc, char **argv) {
 
 			host = com_arg;
 
-			DBG (("Host == %s", host));
-
 			com_arg = strtok (NULL, " ");
 			
 			if (com_arg == NULL) {
@@ -234,9 +238,11 @@ main (int argc, char **argv) {
 			if ((join_uport = check_value (com_arg, "port")) == -1)
 				continue;
 
-			DBG (("UDP Port == %d", join_uport));
-
 			join_tree (uport, tport, join_uport, 1234, host);
+		}
+
+		if (strcmp (command, "computepath") == 0) {
+			DBG (("%s:%s:%s", parent.ip, parent.tport, parent.uport));
 		}
 	}
 
