@@ -124,6 +124,8 @@ main (int argc, char **argv) {
 	char *in_line = (char *) malloc (sizeof (char) * 100);
 	char *command, *com_arg, *host;
 	int join_uport, join_tport;
+	// Flags for the commands
+	int makeserver_f = 0, join_f = 0, computepath_f = 0;
 
 	/* strrchr gives the last occurance of PATH_SEPARATOR in argv[0] */
 	exec_name = strrchr (argv[0], PATH_SEPARATOR);
@@ -167,7 +169,6 @@ main (int argc, char **argv) {
 	tport = atoint_cli (tport_arg, 'p');
 	uport = atoint_cli (uport_arg, 'P');
 	node_number = 0;
-	next_node = 0;
 
 	bzero (in_line, 100);
 
@@ -199,6 +200,14 @@ main (int argc, char **argv) {
 		}
 
 		if (strcmp (command, "makeserver") == 0) {
+			if (join_f == 1) {
+				fprintf (stdout, "You cannot make yourself as server after joining a node");
+				continue;
+			}
+			if (makeserver_f == 1) {
+				fprintf (stdout, "You are already a server");
+				continue;
+			}
 			com_arg = strtok (NULL, " ");
 			if (com_arg == NULL) {
 				fprintf (stdout, "makeserver takes one argument -- k value");
@@ -209,6 +218,8 @@ main (int argc, char **argv) {
 				continue;
 
 			DBG (("k value = '%d'", k));
+			makeserver_f = 1;
+			strcpy (parent.ip, "NULL");
 
 			create_udp (uport, tport, k);
 			create_tcp (tport, k);
@@ -218,7 +229,15 @@ main (int argc, char **argv) {
 
 		if (strcmp (command, "join") == 0) {
 			com_arg = strtok (NULL, " ");
-			
+			if (makeserver_f == 1) {
+				fprintf (stdout, "A server (root node) cannot join");
+				continue;
+			}
+			if (join_f == 1) {
+				fprintf (stdout, "You have already joined");
+				continue;
+			}
+
 			if (com_arg == NULL) {
 				fprintf (stdout, "join takes two argument <ipaddress | host> <udp-port>");
 				continue;
@@ -227,7 +246,7 @@ main (int argc, char **argv) {
 			host = com_arg;
 
 			com_arg = strtok (NULL, " ");
-			
+
 			if (com_arg == NULL) {
 				fprintf (stdout, "join takes two argument <ipaddress | host> <udp-port>");
 				continue;
@@ -236,12 +255,23 @@ main (int argc, char **argv) {
 			if ((join_uport = check_value (com_arg, "port")) == -1)
 				continue;
 
+			join_f = 1;
 			join_tree (uport, tport, join_uport, 1234, host);
 			DBG (("You have joined %s:%s with node number %d ", parent.ip, parent.tport, node_number));
 		}
 
 		if (strcmp (command, "computepath") == 0) {
-			DBG (("%s:%s", parent.ip, parent.tport));
+			computepath_f++;
+			if ((makeserver_f == 0) && (join_f == 0)) {
+				fprintf (stdout, "You can compute path only after 'makeserver' or 'join'");
+				continue;
+			}
+
+			if (strcmp (parent.ip, "NULL") == 0)
+				fprintf (stdout, "You are the root node");
+			else {
+				DBG (("%s:%s", parent.ip, parent.tport));
+			}
 		}
 	}
 
