@@ -1,11 +1,12 @@
 # Tutor README #
-===============
+================
 
 Tutor is an application to create a tutor relationship tree using the client-server model. Consists of a tutor node (server) and many student nodes (clients). This was created as a part of CS 6390 Advanced Computer Networks course at UT Dallas.
 
 Collaborators: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220@utdallas.edu>
 
-Using the application
+ Using the application
+-----------------------
 
 0) Compiling the code
 	make all
@@ -15,3 +16,75 @@ Using the application
 	make cleanall
 
 You may want to have a look at the file Makefile
+
+
+ Intructions
+--------------
+
+0) Once you are done compling the code, 'tutor' binary file will be created. Execute this as shown below:
+
+	./tutor	-p <<tcp-port>> -P <<udp-port>>
+		- p This option is used to send the TCP port in which the node should listen for persistance connection
+		- P This option is used to send the UDP port in which the node should listen for 'join' requests
+
+	Note: Both the options are mandatory.
+
+1) On running the binary you will be getting a prompt as shown below:
+	
+	tutor> 
+
+	Following commands are available for this prompt:
+		o help : Lists all the commands that are available for this prompt
+
+		o makeserver : To make the current node as the ROOT node of tutor tree and start accepting child nodes. Usage is shown below:
+		
+			makeserver <<no-of-child>>
+				- It takes number of childs per-node of the tree as an argument. Once ROOT node sets the number of child to be accepted per-node, every node that joins the tree will have to accept the same number of childs.
+
+		o join : To request for joining the tutor tree. One node can join only once to the tree. Usage is shown below:
+			
+			join <<root-hostname>> <<root-udpport>>
+				- It takes the hostname and UDP port of the ROOT as its argument.
+
+		o copmutepath : To compute the path from the current node to the ROOT node. A new node cannot compute path unless it has joined the tree. It takes no argument but displays all the Node ID on its path to ROOT node.
+
+		o exit : Exits the application 
+
+ Overview
+----------
+
+There are three main functionality in this application. The flow of each one of them is described below:
+
+Making a node as a server (makeserver):
+---------------------------------------
+
+	It accepts number of childs allowed for each node in the tree. A UDP Socket will be created at the port requested by the node. This socket will be waiting for join request from nodes wanting to join the tree. A TCP Socket will also be created at the port requested by the node. This socket will be used when making a persistance connection. The node now becomes ROOT node.
+
+
+Joining the tree (join):
+------------------------
+	
+	Initially, it sends a UDP message with join request to ROOT node. 
+
+	ROOT node checks if it can accept the requesting node as it child based on the number of childs allowed per-node value. If Yes, then ROOT node sends a UDP message with 'accept', ROOT host IP, ROOT TCP port, number of child allowed. 
+
+	If No, then ROOT sends a list of its child nodes. The requesting node now sends a UDP Join Request to each of this nodes. This will continue until the requesting node joins the tree.
+
+	Once the requesting node is accept as a child by one of the node, a UDP Socket and TCP Socket will be created on this child's port. A persistance TCP Connection will also be established with the node that accepted the request which becomes the parent node.
+
+
+Computing the path till the ROOT (computepath):
+-----------------------------------------------
+
+	Any node in the tree, to compute its path to ROOT, will send a TCP request to its parent node asking for the path from itself to ROOT. This request would flow from requesting node to ROOT node and then back to requesting node. Finally, we will be having the path from the requesting node to ROOT node.
+
+
+ File in the application
+------------------------------
+
+0) tutor.c
+1) udp.c
+2) tcp.c
+3) join.c
+4) services.c
+
