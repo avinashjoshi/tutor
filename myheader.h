@@ -39,10 +39,13 @@
 #endif
 
 void 
-create_udp (size_t,int);
+create_udp (size_t,size_t,int);
 
 void
-create_tcp(size_t,char*,int);
+create_tcp(size_t,int);
+
+void
+make_persistance(char*,int);
 
 void 
 join_tree (int,int,int,int,char*);

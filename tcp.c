@@ -11,15 +11,80 @@
 #include"myheader.h"
 
 static void* handle_tcp (void*);
-char *t_host;
+
+static void* handle_persistance (void*);
+
+static
+struct t_details {
+	char *thost;
+	int tport;
+} t_det;
 
 void
-create_tcp (size_t tport,char* host,int k) {
+make_persistance (char *t_host, int tport) {
+
+	pthread_t t_pid;
+
+	t_det.thost = t_host;
+	t_det.tport = tport;
+
+
+	pthread_create(&t_pid,NULL,&handle_persistance,(void *)10);
+}	
+
+static void*
+handle_persistance (void *p) {
+	/* Create a client Socket
+	 *  Connect to the Server Socket
+	 *  Send data
+	 *  Receive data
+	 */
+	
+
+	pthread_detach(pthread_self());
+
+
+	int clientSockid = socket(AF_INET,SOCK_STREAM,0);
+
+	struct sockaddr_in servaddr;
+
+	bzero(&servaddr,sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons((size_t)(t_det.tport));
+	servaddr.sin_addr.s_addr = inet_addr((t_det.thost));
+	//inet_pton(AF_INET,t_det.thost,servaddr.sin_addr);
+
+	int cstatus = connect(clientSockid,(struct sockaddr *)&servaddr,sizeof(servaddr));
+	printf("Client Connection Status : %d\n",cstatus);
+
+	/*Send and Read data
+	char sendD[STRLEN],recvD[STRLEN];
+
+	//Read Input from Console
+	printf("Enter Data: ");
+	fgets(sendD,STRLEN,stdin);
+
+	int sbyte = send(clientSockid,sendD,strlen(sendD),0);
+	printf("Sent Bytes: %d\n",(int)strlen(sendD));
+
+	int rbyte = recv(clientSockid,recvD,STRLEN,0);
+	//fputs(recvD,stdout);
+
+	while((rbyte = recv(clientSockid,recvD,STRLEN,0)) <0)
+	{
+		recvD[rbyte] = 0;
+		fputs(recvD,stdout);
+	}
+
+	printf("Received Bytes: %d\n",(int)strlen(recvD));
+
+	close(clientSockid);*/
+}
+void
+create_tcp (size_t tport,int k) {
 
 	pthread_t tcp_pid;
-	t_host=host;
 	pthread_create (&tcp_pid,NULL,&handle_tcp,(void *) tport);
-	return;
 
 }
 
@@ -30,9 +95,7 @@ handle_tcp (void* tport) {
 	 *	Convert the socket to a listening socket
 	 *	Accept the connection as and when the request arrives
 	 */
-	printf("Creating Socket ...\n");
 	int sockid = socket(AF_INET,SOCK_STREAM,0);
-	printf("Socket Descriptor : %d\n",sockid);
 
 	struct sockaddr_in servaddr,clientaddr;
 	int port;
@@ -40,15 +103,13 @@ handle_tcp (void* tport) {
 	//Server Address has three feilds: Family, Port and Internet Address
 	bzero(&servaddr,sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr(t_host);
-	servaddr.sin_port = htons((size_t)port);
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons((size_t)tport);
 
 	int bstatus = bind(sockid, (struct sockaddr *)&servaddr,sizeof(servaddr));
-	printf("Bind Status : %d\n",bstatus);
 
 	//Convert the socket to listening socket
 	int lstatus = listen(sockid,5);
-	printf("Listen Status :  %d\n",lstatus);
 
 	//Run an infinite loop that continuously accepts all the connection requests
 	for(;;)
@@ -56,8 +117,6 @@ handle_tcp (void* tport) {
 		printf("1");
 		int clientlen = sizeof(clientaddr);
 		size_t clientSockid = accept(sockid,(struct sockaddr *)&clientaddr,&clientlen);
-		printf("Accept Status : %d\n",(int)clientSockid);
-		printf("Request came from %s\n",inet_ntoa(clientaddr.sin_addr));
 	}
 	return NULL;
 }	
