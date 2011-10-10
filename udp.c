@@ -72,7 +72,7 @@ handle_udp (void* uport) {
 		fprintf (stderr,"udp: Socket couldn't be bind\n");
 		exit (EXIT_FAILURE);
 	}
-	next_node = (node_number * k_child) + 1;
+	int next_node = (node_number * k_child) + 1;
 
 	//DBG (("%s \n","UDP Socket created"));
 	/*Blocking Receive call that keeps waiting for join request*/
@@ -121,8 +121,6 @@ handle_udp (void* uport) {
 				child_count++;
 			}
 			else {	
-
-
 				char temp_b[30];
 				bzero (temp, sizeof(temp));
 				for (m=0;m<k_child;m++) {

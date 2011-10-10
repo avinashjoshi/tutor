@@ -58,4 +58,3 @@ struct parent_node {
 } parent;
 char node_id[20];
 int node_number;
-int next_node;
