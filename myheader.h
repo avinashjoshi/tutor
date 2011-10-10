@@ -49,3 +49,9 @@ make_persistance(char*,int);
 
 void 
 join_tree (int,int,int,int,char*);
+
+struct parent_node {
+	char ip[50];
+	char tport[20];
+	char uport[20];
+} parent;

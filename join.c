@@ -17,8 +17,6 @@
  *
  */
 
-extern parent;
-
 struct list_details {
 	char *node_name;
 	char *node_ip;
@@ -95,6 +93,10 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 				t_list[l_index++] = temp_str;
 				temp_str = strtok (NULL, ":");
 			}
+
+			strcpy (parent.ip, t_list[1]);
+			strcpy (parent.tport, t_list[2]);
+
 			create_udp(uport,tport,atoi(t_list[3]));
 			make_persistance(t_list[1],atoi(t_list[2]));
 			create_tcp(tport,atoi(t_list[3]));

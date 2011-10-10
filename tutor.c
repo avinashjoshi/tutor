@@ -15,12 +15,6 @@
 const char *exec_name;
 const char *com_list[] = {"help", "makeserver", "join", "computepath", "NULL"};
 
-struct parent_node {
-	char ip[50];
-	char tport[20];
-	char uport[20];
-} parent;
-
 /* used for mapping the long options to short options */
 const struct option long_options[] = {
 	{ "tport", required_argument, 0, 'p' },
@@ -180,6 +174,8 @@ main (int argc, char **argv) {
 		printf("\ntutor> ");
 		fflush (stdin);
 		fgets (in_line, 100, stdin);
+		if (strcmp (in_line, "\n") == 0)
+			continue;
 		in_line [strlen (in_line) - 1] = '\0';
 
 		command = strtok (in_line, " ");
@@ -242,7 +238,7 @@ main (int argc, char **argv) {
 		}
 
 		if (strcmp (command, "computepath") == 0) {
-			DBG (("%s:%s:%s", parent.ip, parent.tport, parent.uport));
+			DBG (("%s:%s", parent.ip, parent.tport));
 		}
 	}
 
