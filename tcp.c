@@ -74,19 +74,18 @@ void handle_new_connection() {
 void deal_with_data(
 		int listnum			/* Current item in connectlist for for loops */
 		) {
-	char buffer[80];     /* Buffer for socket reads */
+	char buffer[STRLEN];     /* Buffer for socket reads */
 	char *cur_char;      /* Used in processing buffer */
 
-	if (recv(connectlist[listnum],buffer,80,0) < 0) {
+	bzero(&buffer,sizeof(buffer));
+	if (recv(connectlist[listnum],buffer,STRLEN,0) < 0) {
 		close(connectlist[listnum]);
 		connectlist[listnum] = 0;
 	} else {
 		/* We got some data, so upper case it
 		   and send it back. */
-		printf("\nReceived: %s; ",buffer);
-
+		printf("\nReceived: %s ",buffer);
 		send(connectlist[listnum],buffer,strlen(buffer),0);
-		printf("responded: %s\n",buffer);
 	}
 }
 
@@ -225,7 +224,7 @@ handle_tcp (void* tport) {
 	memset((char *) &connectlist, 0, sizeof(connectlist));
 
 	//Run an infinite loop that continuously accepts all the connection requests
-	for(;;)
+	while(1)
 	{
 		build_select_list();
 		timeout.tv_sec = 1;
@@ -233,11 +232,13 @@ handle_tcp (void* tport) {
 
 		readsocks = select(highsock+1, &socks, (fd_set *) 0,(fd_set *) 0, &timeout);
 
-		if(readsocks > 0)
-		{
-			DBG(("%s","TRYING TO READ"));
+		if (readsocks == 0) {
+			/* Nothing ready to read, just show that
+			   we're alive */
+			//printf(".");
+			fflush(stdout);
+		} else
 			read_socks();
-		}
 	}
 	return NULL;
 }	
