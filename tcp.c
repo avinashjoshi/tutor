@@ -10,6 +10,99 @@
  */
 #include"myheader.h"
 
+int sock;            /* The socket file descriptor for our "listening"
+						socket */
+int connectlist[5];  /* Array of connected sockets so we know who
+						we are talking to */
+fd_set socks;        /* Socket file descriptors we want to wake
+						up for, using select() */
+int highsock;	     /* Highest #'d file descriptor, needed for select() */
+
+void setnonblocking(sock)
+	int sock;
+{
+	int opts;
+
+	opts = fcntl(sock,F_GETFL);
+	if (opts < 0) {
+		perror("fcntl(F_GETFL)");
+		exit(EXIT_FAILURE);
+	}
+	opts = (opts | O_NONBLOCK);
+	if (fcntl(sock,F_SETFL,opts) < 0) {
+		perror("fcntl(F_SETFL)");
+		exit(EXIT_FAILURE);
+	}
+	return;
+}
+
+void build_select_list() {
+	int listnum;	     /* Current item in connectlist for for loops */
+
+	FD_ZERO(&socks);
+
+	FD_SET(sock,&socks);
+
+	for (listnum = 0; listnum < 5; listnum++) {
+		if (connectlist[listnum] != 0) {
+			FD_SET(connectlist[listnum],&socks);
+			if (connectlist[listnum] > highsock)
+				highsock = connectlist[listnum];
+		}
+	}
+}
+
+void handle_new_connection() {
+	int listnum;	     /* Current item in connectlist for for loops */
+	int connection; /* Socket file descriptor for incoming connections */
+
+	connection = accept(sock, NULL, NULL);
+	if (connection < 0) {
+		DBG(("%d:%s",connection,"NOT ESTABLISHED"));
+		exit(EXIT_FAILURE);
+	}
+
+	setnonblocking(connection);
+
+	for (listnum = 0; (listnum < 5) && (connection != -1); listnum ++)
+		if (connectlist[listnum] == 0) {
+			connectlist[listnum] = connection;
+			connection = -1;
+		}
+}
+
+void deal_with_data(
+		int listnum			/* Current item in connectlist for for loops */
+		) {
+	char buffer[80];     /* Buffer for socket reads */
+	char *cur_char;      /* Used in processing buffer */
+
+	if (recv(connectlist[listnum],buffer,80,0) < 0) {
+		close(connectlist[listnum]);
+		connectlist[listnum] = 0;
+	} else {
+		/* We got some data, so upper case it
+		   and send it back. */
+		printf("\nReceived: %s; ",buffer);
+
+		send(connectlist[listnum],buffer,strlen(buffer),0);
+		printf("responded: %s\n",buffer);
+	}
+}
+
+void read_socks() {
+	int listnum;	     /* Current item in connectlist for for loops */
+
+	if (FD_ISSET(sock,&socks))
+		handle_new_connection();
+
+	for (listnum = 0; listnum < 5; listnum++) {
+		if (FD_ISSET(connectlist[listnum],&socks))
+			deal_with_data(listnum);
+	}
+}
+
+
 static void* handle_tcp (void*);
 
 static void* handle_persistance (void*);
@@ -39,7 +132,7 @@ handle_persistance (void *p) {
 	 *  Send data
 	 *  Receive data
 	 */
-	
+
 
 	pthread_detach(pthread_self());
 
@@ -64,7 +157,7 @@ handle_persistance (void *p) {
 	DBG (("Persistant connection with %s:%d", t_det.thost, t_det.tport));
 
 	/*Send and Read data
-	char sendD[STRLEN],recvD[STRLEN];
+	  char sendD[STRLEN],recvD[STRLEN];
 
 	//Read Input from Console
 	printf("Enter Data: ");
@@ -78,8 +171,8 @@ handle_persistance (void *p) {
 
 	while((rbyte = recv(clientSockid,recvD,STRLEN,0)) <0)
 	{
-		recvD[rbyte] = 0;
-		fputs(recvD,stdout);
+	recvD[rbyte] = 0;
+	fputs(recvD,stdout);
 	}
 
 	printf("Received Bytes: %d\n",(int)strlen(recvD));
@@ -101,7 +194,19 @@ handle_tcp (void* tport) {
 	 *	Convert the socket to a listening socket
 	 *	Accept the connection as and when the request arrives
 	 */
-	int sockid = socket(AF_INET,SOCK_STREAM,0);
+
+	struct timeval timeout;  /* Timeout for select */
+	int readsocks;	     /* Number of sockets ready for reading */
+	int reuse_addr = 1;
+
+	sock = socket(AF_INET,SOCK_STREAM,0);
+
+	/* So that we can re-bind to it without TIME_WAIT problems */
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
+			sizeof(reuse_addr));
+
+	/* Set socket to non-blocking with our setnonblocking routine */
+	setnonblocking(sock);
 
 	struct sockaddr_in servaddr,clientaddr;
 
@@ -111,16 +216,28 @@ handle_tcp (void* tport) {
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_port = htons((size_t)tport);
 
-	int bstatus = bind(sockid, (struct sockaddr *)&servaddr,sizeof(servaddr));
+	int bstatus = bind(sock, (struct sockaddr *)&servaddr,sizeof(servaddr));
 
 	//Convert the socket to listening socket
-	int lstatus = listen(sockid,5);
+	int lstatus = listen(sock,5);
+
+	highsock = sock;
+	memset((char *) &connectlist, 0, sizeof(connectlist));
 
 	//Run an infinite loop that continuously accepts all the connection requests
 	for(;;)
 	{
-		int clientlen = sizeof(clientaddr);
-		size_t clientSockid = accept(sockid,(struct sockaddr *)&clientaddr,&clientlen);
+		build_select_list();
+		timeout.tv_sec = 1;
+		timeout.tv_usec = 0;
+
+		readsocks = select(highsock+1, &socks, (fd_set *) 0,(fd_set *) 0, &timeout);
+
+		if(readsocks > 0)
+		{
+			DBG(("%s","TRYING TO READ"));
+			read_socks();
+		}
 	}
 	return NULL;
 }	

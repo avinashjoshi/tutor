@@ -21,6 +21,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 /*Buffer Size for every read and write calls*/
 #define STRLEN 1024
