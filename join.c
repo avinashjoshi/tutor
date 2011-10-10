@@ -36,7 +36,7 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 	struct list_details l_details[20];
 	//Creates a temp UDP socket
 	int temp_udp_sockfd,t_index=0,l_index=0,i=0,s_index=0;
-	char **list,*t_list[4],*temp_str;
+	char **list,*t_list[5],*temp_str;
 
 	if ((temp_udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
 		fprintf (stderr,"udp: Socket couldn't be opened\n");
@@ -62,7 +62,6 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 		else
 		{
 			server_addr.sin_addr.s_addr = inet_addr(l_details[i].node_ip);
-			DBG (("Port --> i=%d s=%d port=%ld",i, s_index, (size_t) l_details[i].node_uport));
 			server_addr.sin_port = htons((size_t)l_details[i].node_uport);
 			i++;
 		}
@@ -96,6 +95,8 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 			strcpy (parent.ip, t_list[1]);
 			strcpy (parent.tport, t_list[2]);
+			strcpy (node_id, t_list[4]);
+			node_number = atoi(node_id);
 
 			create_udp(uport,tport,atoi(t_list[3]));
 			make_persistance(t_list[1],atoi(t_list[2]));
@@ -128,7 +129,6 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 			for(t_index=0;t_index<list_len;t_index++)
 			{
-				DBG (("S_INDEX = %d t_index = %d", s_index, t_index));
 				temp_str = list[t_index];
 				l_details[s_index].node_name = strtok (temp_str, ":");
 				l_details[s_index].node_ip = strtok (NULL, ":");

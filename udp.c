@@ -72,6 +72,7 @@ handle_udp (void* uport) {
 		fprintf (stderr,"udp: Socket couldn't be bind\n");
 		exit (EXIT_FAILURE);
 	}
+	next_node = (node_number * k_child) + 1;
 
 	//DBG (("%s \n","UDP Socket created"));
 	/*Blocking Receive call that keeps waiting for join request*/
@@ -98,7 +99,7 @@ handle_udp (void* uport) {
 				strcpy(temp,"accept:");
 				sprintf(temp_k,"%s",inet_ntoa(client_addr.sin_addr));
 				strcat(temp,temp_k);
-				node_det[child_count].nid=child_count+1;
+				node_det[child_count].nid = node_number;
 				strcpy(node_det[child_count].node_ip,temp_k);
 				strcat(temp,":");
 				sprintf(temp_k,"%d",tcpport);
@@ -108,7 +109,11 @@ handle_udp (void* uport) {
 				sprintf(temp_k,"%d",k_child);
 				node_det[child_count].nchildren = k_child;
 				strcat(temp, temp_k);
+				strcat(temp,":");
+				sprintf(temp_k,"%d",next_node);
+				strcat(temp, temp_k);
 				strcat(temp,"\0");
+				next_node++;
 				DBG (("Sending %s", temp));
 				if ((bytes_sent = sendto(udp_sockfd,temp,strlen(temp),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
 					exit(EXIT_FAILURE);

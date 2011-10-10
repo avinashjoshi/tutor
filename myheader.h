@@ -56,3 +56,6 @@ struct parent_node {
 	char tport[20];
 	char uport[20];
 } parent;
+char node_id[20];
+int node_number;
+int next_node;

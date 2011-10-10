@@ -166,6 +166,8 @@ main (int argc, char **argv) {
 
 	tport = atoint_cli (tport_arg, 'p');
 	uport = atoint_cli (uport_arg, 'P');
+	node_number = 0;
+	next_node = 0;
 
 	bzero (in_line, 100);
 
@@ -235,6 +237,7 @@ main (int argc, char **argv) {
 				continue;
 
 			join_tree (uport, tport, join_uport, 1234, host);
+			DBG (("You have joined %s:%s with node number %d ", parent.ip, parent.tport, node_number));
 		}
 
 		if (strcmp (command, "computepath") == 0) {
