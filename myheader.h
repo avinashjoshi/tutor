@@ -54,6 +54,7 @@ join_tree (int,int,int,int,char*);
 struct parent_node {
 	char ip[50];
 	char tport[20];
+	int established_socket;
 	char uport[20];
 } parent;
 char node_id[20];

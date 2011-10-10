@@ -24,8 +24,8 @@ cleanall: clean
 	@echo Removing compiled files: rm -f tutor
 	@rm -f tutor
 
-tutor: tcp.o udp.o join.o tutor.o
-	$(CC) -o tutor join.o tcp.o udp.o tutor.o $(C_LINK)
+tutor: tcp.o udp.o join.o tutor.o services.o
+	$(CC) -o tutor join.o tcp.o udp.o tutor.o services.o $(C_LINK)
 
 tutor.o: tutor.c
 	$(CC) $(C_ARGS) -c tutor.c
@@ -39,3 +39,5 @@ udp.o: udp.c
 join.o: join.c
 	$(CC) $(C_ARGS)	-c join.c $(C_LINK)
 
+services.o: services.c
+	$(CC) $(C_ARGS)	-c services.c $(C_LINK)

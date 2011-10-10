@@ -267,11 +267,11 @@ main (int argc, char **argv) {
 				continue;
 			}
 
-			if (strcmp (parent.ip, "NULL") == 0)
+			if (strcmp (parent.ip, "NULL") == 0) {
 				fprintf (stdout, "You are the root node");
-			else {
-				DBG (("%s:%s", parent.ip, parent.tport));
+				continue;
 			}
+			compute_path();
 		}
 	}
 

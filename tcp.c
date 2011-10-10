@@ -75,16 +75,32 @@ handle_new_connection() {
 void 
 deal_with_data(int listnum) {
 	char buffer[STRLEN];     /* Buffer for socket reads */
+	char buff_send[STRLEN];
 	char *cur_char;      /* Used in processing buffer */
 	int rbytes;
+	char temp_buf[5];
 	bzero(&buffer,sizeof(buffer));
 	if ((rbytes = recv(connectlist[listnum],buffer,STRLEN,0)) < 0) {
 		close(connectlist[listnum]);
 		connectlist[listnum] = 0;
 	} else if (rbytes > 0) {
 		rbytes=0;
-		printf("\nReceived: %d ",buffer);
-		send(connectlist[listnum],buffer,strlen(buffer),0);
+		DBG (("\nReceived: %s ",buffer));
+		if (strcmp (buffer, "compute") == 0) {
+			if (strcmp (parent.ip, "NULL") == 0) {
+				send(connectlist[listnum],"0",4,0);
+				DBG (("Sent :: 0"));
+			} else {
+				send (parent.established_socket, "compute", strlen("compute"), 0);
+				recv (parent.established_socket, buff_send, STRLEN, 0);
+				DBG (("Received :: %s", buff_send));
+				sprintf (temp_buf, "%d", node_number);
+				strcat (buff_send, ":");
+				strcat (buff_send, temp_buf);
+				send(connectlist[listnum], buff_send, strlen(buffer), 0);
+				DBG (("Sent :: %s", buff_send));
+			}
+		}
 	}
 }
 
@@ -137,6 +153,7 @@ handle_persistance (void *p) {
 
 
 	int clientSockid = socket(AF_INET,SOCK_STREAM,0);
+	parent.established_socket = clientSockid;
 
 	struct sockaddr_in servaddr;
 
