@@ -48,7 +48,7 @@ create_tcp(size_t,int);
 void
 make_persistance(char*,int);
 
-void 
+int 
 join_tree (int,int,int,int,char*);
 
 void

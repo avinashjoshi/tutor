@@ -157,8 +157,8 @@ handle_persistance (void *p) {
 	int cstatus = connect(clientSockid,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
 	if (cstatus < 0) {
-		perror ("connect() error");
-		return NULL;
+		perror ("connect() to parent error");
+		exit (EXIT_FAILURE);
 	}
 
 	DBG (("Persistant connection with %s:%d", t_det.thost, t_det.tport));
@@ -181,6 +181,7 @@ handle_tcp (void* tport) {
 	sock = socket(AF_INET,SOCK_STREAM,0);
 	if (sock < 0) {
 		perror ("socket() error");
+		exit (EXIT_FAILURE);
 	}
 
 	/* So that we can re-bind to it without TIME_WAIT problems */
@@ -201,14 +202,14 @@ handle_tcp (void* tport) {
 	int bstatus = bind(sock, (struct sockaddr *)&servaddr,sizeof(servaddr));
 	if (bstatus < 0) {
 		perror ("bind() error");
-		return NULL;
+		exit (EXIT_FAILURE);
 	}
 
 	//Convert the socket to listening socket
 	int lstatus = listen(sock,5);
 	if (lstatus < 0) {
 		perror ("listen() error");
-		return NULL;
+		exit (EXIT_FAILURE);
 	}
 	else {
 		DBG (("Listening..."));

@@ -10,6 +10,19 @@
  */
 
 #include "myheader.h"
+#include <signal.h>
+#include <setjmp.h>
+
+#define RECV_TIMEOUT 5	/* timeout in seconds */
+
+static sigjmp_buf recv_timed_out;
+
+/* timeout handler */
+void
+timeout_handler (int signum) {
+	signal(SIGALRM, SIG_DFL);
+	siglongjmp(recv_timed_out, 1);
+}
 
 struct list_details {
 	char node_name[50];
@@ -23,7 +36,7 @@ struct list_details {
  * with the node that accepted the request
  *
  */
-void
+int
 join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 	char *udp_buffer;
@@ -35,14 +48,14 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 	char **list, *t_list[5], *temp_str;
 
 	if ((temp_udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
-		fprintf (stderr,"udp: Socket couldn't be opened\n");
-		exit (EXIT_FAILURE);
+		perror ("socket() failed");
+		return -1;
 	}
 
 	/* create hostent structure from  user entered host name*/
 	if ((he = gethostbyname(host)) == NULL) {
-		printf("\n%s: error in gethostbyname()", "tutor");
-		exit(0);
+		fprintf(stdout, "Unable to resolve host %s", host);
+		return -1;
 	}
 
 	while (1) {
@@ -70,11 +83,27 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 		strcat (sendbuff, port_ch);
 
 		if ((bytes_sent = sendto (temp_udp_sockfd, sendbuff, strlen(sendbuff), 0, (struct sockaddr *) &server_addr, server_addr_size)) < 0) {
-			exit (EXIT_FAILURE);
+			perror ("sendto() error");
+			return -1;
 		}
 
-		if ((bytes_received = recvfrom (temp_udp_sockfd, udp_buffer, STRLEN, 0, (struct sockaddr *) &server_addr, (socklen_t *) &server_addr_size)) < 0) {
-			exit (EXIT_FAILURE);
+		if (sigsetjmp(recv_timed_out, 1)) {
+			printf("recvfrom() timed out\n\n");
+			return -1;
+		}
+
+		/* set timer and handler */
+		signal(SIGALRM, timeout_handler);
+		alarm(RECV_TIMEOUT);
+
+		bytes_received = recvfrom (temp_udp_sockfd, udp_buffer, STRLEN, 0, (struct sockaddr *) &server_addr, (socklen_t *) &server_addr_size);
+
+		alarm(0);
+		signal(SIGALRM, SIG_DFL);
+
+		if (bytes_received < 0) {
+			perror ("recvfrom() error");
+			return -1;
 		}
 
 		if (udp_buffer[0] == 'a') {
@@ -128,4 +157,5 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 		udp_buffer = NULL;
 	}
 	close(temp_udp_sockfd);
+	return 1;
 }

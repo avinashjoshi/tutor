@@ -9,11 +9,11 @@ Collaborators: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220
 -----------------------
 
 0) Compiling the code
-	make all
+	`make all`
 1) Removing object files
-	make clean
+	`make clean`
 2) Removing all compiled files
-	make cleanall
+	`make cleanall`
 
 Note: You may want to have a look at the file Makefile
 
@@ -73,7 +73,7 @@ Joining the tree (join):
 
 	If No, then ROOT sends a list of its child nodes. The requesting node now sends a UDP Join Request to each of this nodes. This will continue until the requesting node joins the tree.
 
-	Once the requesting node is accept as a child by one of the node, a UDP Socket and TCP Socket will be created on this child's port. A persistance TCP Connection will also be established with the node that accepted the request which becomes the parent node.
+	Once the requesting node is accepted as a child by one of the node, a UDP Socket and TCP Socket will be created on this child's port. A persistance TCP Connection will also be established with the node that accepted the request which becomes the parent node.
 
 
 Computing the path till the ROOT (computepath):
@@ -82,12 +82,12 @@ Computing the path till the ROOT (computepath):
 	Any node in the tree, to compute its path to ROOT, will send a TCP request to its parent node asking for the path from itself to ROOT. This request would flow from requesting node to ROOT node and then back to requesting node. Finally, we will be having the path from the requesting node to ROOT node.
 
 
- File in the application
-------------------------------
+Source File in the application
+-------------------------------
 
 0) tutor.c
 1) udp.c
 2) tcp.c
 3) join.c
 4) services.c
-
+5) myHeader.h

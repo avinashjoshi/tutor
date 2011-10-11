@@ -8,6 +8,7 @@
  *
  * Contributors: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220@utdallas.edu>
  */
+
 #include "myheader.h"
 
 int child_count=0;
@@ -62,8 +63,8 @@ handle_udp (void* uport) {
 
 	//Creates a UDP socket
 	if ((udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
-		fprintf (stderr,"udp: Socket couldn't be opened\n");
-		exit (EXIT_FAILURE);
+		perror ("socket() failed");
+		return NULL;
 	}
 
 	//Creates a local server structure
@@ -77,15 +78,15 @@ handle_udp (void* uport) {
 	gethostname (server_host, 49);
 	if ((he = gethostbyname(server_host)) == NULL) {
 		herror(server_host);
-		puts("error resolving hostname..");
-		return NULL;
+		fprintf (stdout, "Unable to resolve host %s", server_host);
+		exit (EXIT_FAILURE);
 	}
 	struct in_addr **tmp = (struct in_addr **) he->h_addr_list;
 	DBG (("Hostname:IP = %s:%s", server_host, inet_ntoa(*tmp[0])));
 
 	/*Binds the socket*/
 	if (bind (udp_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
-		fprintf (stderr,"udp: Socket couldn't be bind\n");
+		perror ("bind() failed");
 		exit (EXIT_FAILURE);
 	}
 	int next_node = (node_number * k_child) + 1;
@@ -99,7 +100,8 @@ handle_udp (void* uport) {
 		bzero (&udp_buffer,sizeof(udp_buffer));
 		char temp[STRLEN];
 		if ((bytes_received = recvfrom(udp_sockfd, udp_buffer, STRLEN, 0, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_size)) < 0) {
-			exit(EXIT_FAILURE);
+			perror ("recvfrom() failed");
+			exit (EXIT_FAILURE);
 		}
 
 		char temp_buff[50], *temp_port, *temp_command;
@@ -132,7 +134,8 @@ handle_udp (void* uport) {
 				next_node++;
 				DBG (("Sending %s", temp));
 				if ((bytes_sent = sendto(udp_sockfd,temp,strlen(temp),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
-					exit(EXIT_FAILURE);
+					perror ("sendto() failed");
+					exit (EXIT_FAILURE);
 				}
 				child_count++;
 			}
@@ -155,12 +158,12 @@ handle_udp (void* uport) {
 				}
 				DBG (("Sending %s",temp));
 				if ((bytes_sent = sendto(udp_sockfd,temp,strlen(temp),0,(struct sockaddr *)&client_addr,client_addr_size)) < 0) {
-					exit(EXIT_FAILURE);
+					perror ("sendto() failed");
+					exit (EXIT_FAILURE);
 				}
 			}
 		}
 
 	}
-
 	return NULL;
 }

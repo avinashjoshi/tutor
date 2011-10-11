@@ -1,4 +1,4 @@
-# Use this Makefile to compile the code
+# Use this Makefile to compile tutor program
 # Collaborators: Avinash Joshi <axj107420@utdallas.edu>
 #                Sandeep Shenoy <sxs115220@utdallas.edu>
 

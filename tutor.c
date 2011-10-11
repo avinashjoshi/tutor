@@ -122,7 +122,7 @@ main (int argc, char **argv) {
 	char *tport_arg, *uport_arg;
 	char *in_line = (char *) malloc (sizeof (char) * 100);
 	char *command, *com_arg, *host;
-	int join_uport;
+	int join_uport, join_status;
 	// Flags for the commands
 	int makeserver_f = 0, join_f = 0, computepath_f = 0;
 
@@ -254,8 +254,11 @@ main (int argc, char **argv) {
 			if ((join_uport = check_value (com_arg, "port")) == -1)
 				continue;
 
+			join_status = join_tree (uport, tport, join_uport, 1234, host);
+			sleep (2);
+			if (join_status == -1)
+				continue;
 			join_f = 1;
-			join_tree (uport, tport, join_uport, 1234, host);
 			fprintf (stdout, "You are now a tutor with ID:%d. Reach your instructor @ %s:%s", node_number, parent.ip, parent.tport);
 			continue;
 		}
