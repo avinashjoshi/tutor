@@ -8,7 +8,7 @@ C_LINK = -pthread
 
 # Comment the following line while not
 # using the gnu c compiler
-C_ARGS = -Wall
+#C_ARGS = -Wall
 
 CC = gcc
 

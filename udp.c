@@ -66,7 +66,17 @@ handle_udp (void* uport) {
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	bzero (&udp_list_buffer,sizeof(udp_list_buffer));
-	
+
+char server_host[50];
+struct hostent *he;
+	gethostname (server_host, 49);
+	 if ((he = gethostbyname(server_host)) == NULL) {
+	          herror(server_host);
+	          puts("error resolving hostname..");
+	          return;
+	 }
+	struct in_addr **tmp = (struct in_addr **) he->h_addr_list;
+	DBG (("Hostname:IP = %s:%s", server_host, inet_ntoa(*tmp[0])));
 	/*Binds the socket*/
 	if (bind (udp_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 		fprintf (stderr,"udp: Socket couldn't be bind\n");
@@ -97,10 +107,10 @@ handle_udp (void* uport) {
 		if (strcmp( temp_command , "join") == 0) {
 			if (child_count < k_child ) {
 				strcpy(temp,"accept:");
-				sprintf(temp_k,"%s",inet_ntoa(client_addr.sin_addr));
+				sprintf(temp_k,"%s", inet_ntoa(*tmp[0]));
 				strcat(temp,temp_k);
 				node_det[child_count].nid = node_number;
-				strcpy(node_det[child_count].node_ip,temp_k);
+				strcpy(node_det[child_count].node_ip,inet_ntoa(client_addr.sin_addr));
 				strcat(temp,":");
 				sprintf(temp_k,"%d",tcpport);
 				node_det[child_count].node_udpport = child_port;

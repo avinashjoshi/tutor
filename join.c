@@ -18,10 +18,10 @@
  */
 
 struct list_details {
-	char *node_name;
-	char *node_ip;
+	char node_name[50];
+	char node_ip[50];
 	int node_uport;
-	int node_tport;
+	int nchild;
 };
 
 void
@@ -32,8 +32,8 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 	char *udp_buffer;
 	struct sockaddr_in server_addr;
 	int server_addr_size,bytes_received,bytes_sent;
-	struct hostent* h;
-	struct list_details l_details[20];
+	struct hostent* he;
+	struct list_details l_details[200];
 	//Creates a temp UDP socket
 	int temp_udp_sockfd,t_index=0,l_index=0,i=0,s_index=0;
 	char **list,*t_list[5],*temp_str;
@@ -44,23 +44,30 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 	}
 
 	/* create hostent structure from  user entered host name*/
-	if ( (h = gethostbyname(host)) == NULL) {
+	if ( (he = gethostbyname(host)) == NULL) {
 		printf("\n%s: error in gethostbyname()", "tutor");
 		exit(0);
 	}
+	int test_index = 0;
 
 	while (1) {
-		udp_buffer = (char *) malloc(STRLEN);
+
+
+		udp_buffer = (char *) malloc(sizeof (char) * STRLEN);
 
 		bzero (&server_addr,sizeof(server_addr));
 
 		server_addr.sin_family = AF_INET;
 		if (s_index == 0) {
-			server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+			memcpy(&server_addr.sin_addr, he->h_addr_list[0], he->h_length);
+			//server_addr.sin_addr.s_addr = inet_addr(host);
 			server_addr.sin_port = htons((size_t)r_uport);
 		}
 		else
 		{
+			for(test_index=0;test_index<s_index;test_index++) {
+				DBG (("STRUCTURE BEING USED %d :: %s :: %s :: %d", test_index,l_details[test_index].node_ip, l_details[test_index].node_name, l_details[test_index].node_uport));
+				}
 			server_addr.sin_addr.s_addr = inet_addr(l_details[i].node_ip);
 			server_addr.sin_port = htons((size_t)l_details[i].node_uport);
 			i++;
@@ -110,6 +117,7 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 
 			int list_len = 0;
 			char temp2[STRLEN];
+
 			strncpy (temp2, udp_buffer, STRLEN);
 			temp_str = strtok ( udp_buffer , ",");
 			while (temp_str != NULL) {
@@ -126,16 +134,26 @@ join_tree(int uport,int tport,int r_uport,int r_tport,char* host) {
 				list[list_len++] = temp_str;
 				temp_str = strtok (NULL, ",");
 			}
-
+			
+			int test_port;
+			for(test_index=0;test_index<s_index;test_index++) {
+				DBG (("STRUCTURE BEFORE NEW BUILT %d :: %s :: %s :: %d", test_index,l_details[test_index].node_ip, l_details[test_index].node_name, l_details[test_index].node_uport));
+}
 			for(t_index=0;t_index<list_len;t_index++)
 			{
-				temp_str = list[t_index];
-				l_details[s_index].node_name = strtok (temp_str, ":");
-				l_details[s_index].node_ip = strtok (NULL, ":");
+				strcpy (l_details[s_index].node_name, strtok(list[t_index],":"));
+				strcpy (l_details[s_index].node_ip, strtok (NULL, ":"));
 				l_details[s_index].node_uport = atoi (strtok (NULL, ":"));
-				l_details[s_index].node_tport = atoi (strtok (NULL, ":"));
+				l_details[s_index].nchild = atoi (strtok (NULL, ":"));
+				
+				//DBG (("STRUCTURE %d :: %s :: %s :: %d", t_index,l_details[s_index].node_ip, l_details[s_index].node_name, l_details[s_index].node_uport));
 				s_index++;
 			}
+			
+			for(test_index=0;test_index<s_index;test_index++) {
+				DBG (("STRUCTURE BUILT %d :: %s :: %s :: %d", test_index,l_details[test_index].node_ip, l_details[test_index].node_name, l_details[test_index].node_uport));
+}
+
 		}
 		udp_buffer = NULL;
 	}

@@ -61,7 +61,9 @@ handle_new_connection() {
 	if (connection < 0) {
 		DBG(("%d:%s",connection,"NOT ESTABLISHED"));
 		exit(EXIT_FAILURE);
-	}
+	} else {
+		DBG (("Connection established"));
+		}
 
 	setnonblocking(connection);
 
@@ -166,7 +168,8 @@ handle_persistance (void *p) {
 	int cstatus = connect(clientSockid,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
 	if (cstatus < 0) {
-		fprintf (stdout, "Error in connect()");
+		perror ("connect() error");
+		//fprintf (stdout, "Error in connect()");
 		return;
 	}
 
@@ -216,6 +219,9 @@ handle_tcp (void* tport) {
 	int reuse_addr = 1;
 
 	sock = socket(AF_INET,SOCK_STREAM,0);
+	if (sock < 0) {
+		perror ("socket() error");
+		}
 
 	/* So that we can re-bind to it without TIME_WAIT problems */
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
@@ -236,6 +242,10 @@ handle_tcp (void* tport) {
 
 	//Convert the socket to listening socket
 	int lstatus = listen(sock,5);
+	if (lstatus < 0)
+		perror ("listen() error");
+	else
+		fprintf (stdout, "Listening...");
 
 	highsock = sock;
 	memset((char *) &connectlist, 0, sizeof(connectlist));
