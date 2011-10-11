@@ -9,7 +9,6 @@
  * Contributors: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220@utdallas.edu>
  */
 
-/* Include header files */
 #include "myheader.h"
 
 const char *exec_name;
@@ -26,15 +25,15 @@ const struct option long_options[] = {
 /* Print the usage message */
 static void
 print_usage (void) {
-	printf ("usage: %s -p tcp_port -P udp_port [-h]\n", exec_name);
+	fprintf (stdout, "usage: %s -p tcp_port -P udp_port [-h]\n", exec_name);
 }
 
 /* Print help message with all options */
 static void
 print_help (void) {
-	printf ("%s is an application to create tutor-student relationship tree\n", exec_name);
+	fprintf (stdout, "%s is an application to create tutor-student relationship tree\n", exec_name);
 	print_usage ();
-	printf ("\
+	fprintf (stdout, "\
 			-p, --tport <number>   port number to be used with TCP\n\
 			-P, --uport <number>   port number to be used with UDP\n\
 			-h, --help             print this help\n");
@@ -108,10 +107,10 @@ void
 list_commands (void) {
 	int i = 0;
 	while (strcmp ("NULL", com_list[i]) != 0) {
-		printf ("%s ", com_list[i]);
+		fprintf (stdout, "%s ", com_list[i]);
 		i++;
 	}
-	printf ("\n");
+	fprintf (stdout, "\n");
 }
 
 int
@@ -123,7 +122,7 @@ main (int argc, char **argv) {
 	char *tport_arg, *uport_arg;
 	char *in_line = (char *) malloc (sizeof (char) * 100);
 	char *command, *com_arg, *host;
-	int join_uport, join_tport;
+	int join_uport;
 	// Flags for the commands
 	int makeserver_f = 0, join_f = 0, computepath_f = 0;
 
@@ -173,14 +172,14 @@ main (int argc, char **argv) {
 	bzero (in_line, 100);
 
 	DBG (("TCP Port: %d\t UDP Port: %d", tport, uport));
+	fprintf (stdout, "Howdy, fella. Looking to tutor?");
 	while (1) {
-		printf("\ntutor> ");
+		fprintf (stdout, "\ntutor> ");
 		fflush (stdin);
 		fgets (in_line, 100, stdin);
 		if (strcmp (in_line, "\n") == 0)
 			continue;
 		in_line [strlen (in_line) - 1] = '\0';
-
 		command = strtok (in_line, " ");
 
 		// Capture CTLR-D and exit
@@ -223,7 +222,7 @@ main (int argc, char **argv) {
 
 			create_udp (uport, tport, k);
 			create_tcp (tport, k);
-
+			fprintf (stdout, "Bound to UDP:%d TCP:%d", uport, tport);
 			continue;
 		}
 
@@ -257,7 +256,8 @@ main (int argc, char **argv) {
 
 			join_f = 1;
 			join_tree (uport, tport, join_uport, 1234, host);
-			DBG (("You have joined %s:%s with node number %d ", parent.ip, parent.tport, node_number));
+			fprintf (stdout, "You are now a tutor with ID:%d. Reach your instructor @ %s:%s", node_number, parent.ip, parent.tport);
+			continue;
 		}
 
 		if (strcmp (command, "computepath") == 0) {
@@ -271,6 +271,7 @@ main (int argc, char **argv) {
 				fprintf (stdout, "You are the root node");
 				continue;
 			}
+			fprintf (stdout, "Computing path...");
 			compute_path();
 		}
 	}

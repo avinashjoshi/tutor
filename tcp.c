@@ -8,6 +8,7 @@
  *
  * Contributors: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220@utdallas.edu>
  */
+
 #include"myheader.h"
 
 int sock;            /* The socket file descriptor for our "listening"
@@ -40,7 +41,6 @@ build_select_list() {
 	int listnum;	     /* Current item in connectlist for for loops */
 
 	FD_ZERO(&socks);
-
 	FD_SET(sock,&socks);
 
 	for (listnum = 0; listnum < 5; listnum++) {
@@ -59,11 +59,11 @@ handle_new_connection() {
 
 	connection = accept(sock, NULL, NULL);
 	if (connection < 0) {
-		DBG(("%d:%s",connection,"NOT ESTABLISHED"));
+		perror ("accept() failed");
 		exit(EXIT_FAILURE);
 	} else {
 		DBG (("Connection established"));
-		}
+	}
 
 	setnonblocking(connection);
 
@@ -78,7 +78,6 @@ void
 deal_with_data(int listnum) {
 	char buffer[STRLEN];     /* Buffer for socket reads */
 	char buff_send[STRLEN];
-	char *cur_char;      /* Used in processing buffer */
 	int rbytes;
 	char temp_buf[5];
 	bzero(&buffer,sizeof(buffer));
@@ -134,25 +133,16 @@ void
 make_persistance (char *t_host, int tport) {
 
 	pthread_t t_pid;
-
 	t_det.thost = t_host;
 	t_det.tport = tport;
-
 
 	pthread_create(&t_pid,NULL,&handle_persistance,(void *)10);
 }	
 
 static void*
 handle_persistance (void *p) {
-	/* Create a client Socket
-	 *  Connect to the Server Socket
-	 *  Send data
-	 *  Receive data
-	 */
-
 
 	pthread_detach(pthread_self());
-
 
 	int clientSockid = socket(AF_INET,SOCK_STREAM,0);
 	parent.established_socket = clientSockid;
@@ -163,56 +153,26 @@ handle_persistance (void *p) {
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons((size_t)(t_det.tport));
 	servaddr.sin_addr.s_addr = inet_addr(t_det.thost);
-	//inet_pton(AF_INET,t_det.thost,servaddr.sin_addr);
 
 	int cstatus = connect(clientSockid,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
 	if (cstatus < 0) {
 		perror ("connect() error");
-		//fprintf (stdout, "Error in connect()");
-		return;
+		return NULL;
 	}
 
 	DBG (("Persistant connection with %s:%d", t_det.thost, t_det.tport));
 
-	/*Send and Read data
-	  char sendD[STRLEN],recvD[STRLEN];
-
-	//Read Input from Console
-	printf("Enter Data: ");
-	fgets(sendD,STRLEN,stdin);
-
-	int sbyte = send(clientSockid,sendD,strlen(sendD),0);
-	printf("Sent Bytes: %d\n",(int)strlen(sendD));
-
-	int rbyte = recv(clientSockid,recvD,STRLEN,0);
-	//fputs(recvD,stdout);
-
-	while((rbyte = recv(clientSockid,recvD,STRLEN,0)) <0)
-	{
-	recvD[rbyte] = 0;
-	fputs(recvD,stdout);
-	}
-
-	printf("Received Bytes: %d\n",(int)strlen(recvD));
-
-	close(clientSockid);*/
+	return NULL;
 }
 void
 create_tcp (size_t tport,int k) {
-
 	pthread_t tcp_pid;
 	pthread_create (&tcp_pid,NULL,&handle_tcp,(void *) tport);
-
 }
 
 static void* 
 handle_tcp (void* tport) {
-	/*	Create a Socket
-	 *	Bind the Socket to a port
-	 *	Convert the socket to a listening socket
-	 *	Accept the connection as and when the request arrives
-	 */
 
 	struct timeval timeout;  /* Timeout for select */
 	int readsocks;	     /* Number of sockets ready for reading */
@@ -221,7 +181,7 @@ handle_tcp (void* tport) {
 	sock = socket(AF_INET,SOCK_STREAM,0);
 	if (sock < 0) {
 		perror ("socket() error");
-		}
+	}
 
 	/* So that we can re-bind to it without TIME_WAIT problems */
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
@@ -230,7 +190,7 @@ handle_tcp (void* tport) {
 	/* Set socket to non-blocking with our setnonblocking routine */
 	setnonblocking(sock);
 
-	struct sockaddr_in servaddr,clientaddr;
+	struct sockaddr_in servaddr;
 
 	//Server Address has three feilds: Family, Port and Internet Address
 	bzero(&servaddr,sizeof(servaddr));
@@ -239,13 +199,20 @@ handle_tcp (void* tport) {
 	servaddr.sin_port = htons((size_t)tport);
 
 	int bstatus = bind(sock, (struct sockaddr *)&servaddr,sizeof(servaddr));
+	if (bstatus < 0) {
+		perror ("bind() error");
+		return NULL;
+	}
 
 	//Convert the socket to listening socket
 	int lstatus = listen(sock,5);
-	if (lstatus < 0)
+	if (lstatus < 0) {
 		perror ("listen() error");
-	else
-		fprintf (stdout, "Listening...");
+		return NULL;
+	}
+	else {
+		DBG (("Listening..."));
+	}
 
 	highsock = sock;
 	memset((char *) &connectlist, 0, sizeof(connectlist));
@@ -260,9 +227,6 @@ handle_tcp (void* tport) {
 		readsocks = select(highsock+1, &socks, (fd_set *) 0,(fd_set *) 0, &timeout);
 
 		if (readsocks == 0) {
-			/* Nothing ready to read, just show that
-			   we're alive */
-			//printf(".");
 			fflush(stdout);
 		} else
 			read_socks();

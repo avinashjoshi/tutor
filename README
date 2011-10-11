@@ -15,7 +15,7 @@ Collaborators: Avinash Joshi <axj107420@utdallas.edu>, Sandeep Shenoy <sxs115220
 2) Removing all compiled files
 	make cleanall
 
-You may want to have a look at the file Makefile
+Note: You may want to have a look at the file Makefile
 
 
  Intructions
@@ -49,6 +49,9 @@ You may want to have a look at the file Makefile
 		o copmutepath : To compute the path from the current node to the ROOT node. A new node cannot compute path unless it has joined the tree. It takes no argument but displays all the Node ID on its path to ROOT node.
 
 		o exit : Exits the application 
+
+2) A "debug" feature is also provided with this application. To enable the debug, you will have to add "#define _DEBUG_" in 'myHeader.h'
+	Note: Debug is dissabled by default
 
  Overview
 ----------

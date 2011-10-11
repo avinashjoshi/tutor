@@ -8,7 +8,7 @@ C_LINK = -pthread
 
 # Comment the following line while not
 # using the gnu c compiler
-#C_ARGS = -Wall
+C_ARGS = -Wall
 
 CC = gcc
 
@@ -24,8 +24,8 @@ cleanall: clean
 	@echo Removing compiled files: rm -f tutor
 	@rm -f tutor
 
-tutor: tcp.o udp.o join.o tutor.o services.o
-	$(CC) -o tutor join.o tcp.o udp.o tutor.o services.o $(C_LINK)
+tutor: tcp.o udp.o join.o services.o tutor.o 
+	$(CC) -o tutor join.o tcp.o udp.o services.o tutor.o $(C_LINK)
 
 tutor.o: tutor.c
 	$(CC) $(C_ARGS) -c tutor.c

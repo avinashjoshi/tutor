@@ -13,14 +13,21 @@
 int child_count=0;
 int k_child=0;
 int tcpport=0;
+
+// Functin definition
 static void* handle_udp(void*);
 
+/*
+ * The node_details holds the structure for the list of 
+ * nodes a.k.a 'children' to be sent if join is not accepted
+ */
 struct node_details {
-	int nid;
-	char node_ip[30];
-	int node_udpport;
-	int nchildren;
-}node_det[10];
+	int		nid;
+	char	node_ip[30];
+	int		node_udpport;
+	int		nchildren;
+} node_det[10];
+
 /*
  * This function creates a new thread for the UDP socket
  *
@@ -29,8 +36,7 @@ void
 create_udp (size_t uport,size_t tport,int k) {
 	k_child = k;
 	tcpport = tport;
-	
-	//node_det = (struct node_details *)malloc(sizeof(*node_det)*k);
+
 	pthread_t udp_pid;
 
 	pthread_create(&udp_pid,NULL,&handle_udp,(void *)uport);
@@ -45,13 +51,14 @@ static void*
 handle_udp (void* uport) {
 
 	pthread_detach(pthread_self());
-	int udp_sockfd,bytes_received,bytes_sent,client_addr_size;
-	struct sockaddr_in server_addr,client_addr;
+	int udp_sockfd, bytes_received, bytes_sent, client_addr_size;
+	struct sockaddr_in server_addr, client_addr;
 	char udp_buffer[STRLEN];
 	char udp_list_buffer[STRLEN];
 	char temp_k[20];
-
-	int m=0;
+	char server_host[50];
+	struct hostent *he;
+	int m = 0;
 
 	//Creates a UDP socket
 	if ((udp_sockfd = socket (AF_INET,SOCK_DGRAM,0)) < 0) {
@@ -67,16 +74,15 @@ handle_udp (void* uport) {
 
 	bzero (&udp_list_buffer,sizeof(udp_list_buffer));
 
-char server_host[50];
-struct hostent *he;
 	gethostname (server_host, 49);
-	 if ((he = gethostbyname(server_host)) == NULL) {
-	          herror(server_host);
-	          puts("error resolving hostname..");
-	          return;
-	 }
+	if ((he = gethostbyname(server_host)) == NULL) {
+		herror(server_host);
+		puts("error resolving hostname..");
+		return NULL;
+	}
 	struct in_addr **tmp = (struct in_addr **) he->h_addr_list;
 	DBG (("Hostname:IP = %s:%s", server_host, inet_ntoa(*tmp[0])));
+
 	/*Binds the socket*/
 	if (bind (udp_sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 		fprintf (stderr,"udp: Socket couldn't be bind\n");
@@ -84,14 +90,15 @@ struct hostent *he;
 	}
 	int next_node = (node_number * k_child) + 1;
 
-	//DBG (("%s \n","UDP Socket created"));
+	DBG (("%s \n","UDP Socket created"));
+
 	/*Blocking Receive call that keeps waiting for join request*/
 	client_addr_size = sizeof(client_addr); 
 	while (1)
 	{
 		bzero (&udp_buffer,sizeof(udp_buffer));
 		char temp[STRLEN];
-		if ((bytes_received = recvfrom(udp_sockfd,udp_buffer,STRLEN,0,(struct sockaddr *)&client_addr,&client_addr_size)) < 0) {
+		if ((bytes_received = recvfrom(udp_sockfd, udp_buffer, STRLEN, 0, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_size)) < 0) {
 			exit(EXIT_FAILURE);
 		}
 
@@ -103,7 +110,6 @@ struct hostent *he;
 		temp_port = strtok (NULL, ":");
 		child_port = atoi(temp_port);
 
-		//TODO: Check for k value before accepting the request
 		if (strcmp( temp_command , "join") == 0) {
 			if (child_count < k_child ) {
 				strcpy(temp,"accept:");

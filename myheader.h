@@ -26,7 +26,7 @@
 /*Buffer Size for every read and write calls*/
 #define STRLEN 1024
 
-#define _DEBUG_
+//#define _DEBUG_
 /* To print DEBUG printf's */
 #ifdef  _DEBUG_
 #define DBG(x)  printf ("DEBUG: "); printf x; printf("\n");
@@ -50,6 +50,9 @@ make_persistance(char*,int);
 
 void 
 join_tree (int,int,int,int,char*);
+
+void
+compute_path (void);
 
 struct parent_node {
 	char ip[50];

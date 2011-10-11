@@ -14,11 +14,25 @@
 void
 compute_path (void) {
 	char buff[STRLEN];
-	char temp_buf[10];
+	char temp_buf[10], *path_ptr;
 	send (parent.established_socket, "compute", strlen("compute"), 0);
 	recv (parent.established_socket, buff, STRLEN, 0);
 	sprintf (temp_buf, "%d", node_number);
 	strcat (buff, ":");
 	strcat (buff, temp_buf);
+
+	/*
+	 * Splitting the received buffer
+	 */
+
+	fprintf (stdout, "\nPath: ");
+	path_ptr = strtok (buff, ":");
+	while (path_ptr != NULL) {
+		fprintf (stdout, "Node (%s)", path_ptr);
+		path_ptr = strtok (NULL, ":");
+		if (path_ptr != NULL)
+			fprintf (stdout, " --> ");
+	}
+
 	DBG (("Path: %s", buff));
 }
